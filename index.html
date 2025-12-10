@@ -19,9 +19,12 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      padding: 24px 12px;   /* küçük ekranlar için nefes alanı */
+      /* overflow: hidden;  <-- PROBLEMLİ OLANI SİLDİK */
     }
 
     .card {
+      position: relative;
       background: rgba(0, 0, 0, 0.4);
       padding: 32px 24px;
       border-radius: 18px;
@@ -30,6 +33,7 @@
       text-align: center;
       box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
       backdrop-filter: blur(10px);
+      overflow: hidden;
     }
 
     h1 {
@@ -75,10 +79,12 @@
       display: flex;
       gap: 12px;
       justify-content: center;
+      flex-wrap: wrap;
     }
 
     .btn {
       flex: 1;
+      min-width: 120px;
       padding: 10px 0;
       border-radius: 999px;
       border: none;
@@ -110,6 +116,124 @@
       font-size: 0.85rem;
       opacity: 0.8;
     }
+
+    .message {
+      margin-top: 18px;
+      min-height: 60px;
+      font-size: 0.9rem;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+
+    .message.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .message.warning {
+      color: #ffdf6b;
+    }
+
+    .final-message {
+      line-height: 1.4;
+    }
+
+    .continue-btn {
+      margin-top: 12px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: none;
+      background: #ffcf33;
+      color: #3b2200;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.35);
+    }
+
+    .continue-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .final-note {
+      margin-top: 12px;
+      font-style: italic;
+      opacity: 0.9;
+    }
+
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      20% { transform: translateX(-6px); }
+      40% { transform: translateX(6px); }
+      60% { transform: translateX(-4px); }
+      80% { transform: translateX(4px); }
+      100% { transform: translateX(0); }
+    }
+
+    .particle {
+      position: absolute;
+      font-size: 18px;
+      pointer-events: none;
+      animation: floatUp 1.4s ease-out forwards;
+      text-shadow: 0 0 6px rgba(0,0,0,0.6);
+    }
+
+    @keyframes floatUp {
+      0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(-60px) scale(1.5);
+      }
+    }
+
+    .message.effect-light {
+      text-shadow: 0 0 6px rgba(255,255,255,0.5);
+    }
+
+    .message.effect-medium {
+      text-shadow: 0 0 10px rgba(255,255,255,0.7);
+    }
+
+    .message.effect-heavy {
+      text-shadow: 0 0 14px rgba(255,255,255,0.9);
+      font-weight: 600;
+    }
+
+    /* MOBİL DÜZENLEMELERİ */
+    @media (max-width: 480px) {
+      body {
+        align-items: flex-start;
+        padding-top: 24px;
+      }
+
+      .card {
+        padding: 24px 18px;
+      }
+
+      h1 {
+        font-size: 1.4rem;
+      }
+
+      .note,
+      .quote,
+      .music,
+      .message {
+        font-size: 0.85rem;
+      }
+
+      .buttons {
+        gap: 8px;
+      }
+
+      .btn {
+        font-size: 0.85rem;
+        padding: 8px 0;
+        min-width: 100px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -133,15 +257,150 @@
     <p class="question">Dünyanın en büyük yalanı nedir bilir misin?</p>
 
     <div class="buttons">
-      <button class="btn btn-yes" onclick="alert('Doğru cevap: Ben iyiyim, bir şey yok. 🙂')">
+      <button class="btn btn-yes" onclick="handleYes()">
         ✨ Evet ✨
       </button>
-      <button class="btn btn-no" onclick="alert('Yalanı yakaladın prenses, sensiz bir şey eksik. 💫')">
+
+      <button class="btn btn-no" onclick="handleNo()">
         Hayır
       </button>
     </div>
 
+    <div id="message" class="message"></div>
+
     <p class="music">♪ ♫ ♪</p>
   </div>
+
+  <script>
+    let attemptCount = 0;
+
+    function handleYes() {
+      attemptCount++;
+      const message = document.getElementById('message');
+
+      const responses = [
+        "😊 Hayır'a basman gerek saffoloz!",
+        "😄 Hala Evet'e mi basıyorsun? Hayır'a tıkla...",
+        "Hayır'a TIKLA x)",
+        "İnadı bırak, Hayır'a bas bu bir emirdir 😠",
+      ];
+
+      const responseIndex = Math.min(attemptCount - 1, responses.length - 1);
+      message.innerHTML = responses[responseIndex];
+      message.className = "message warning show";
+
+      const card = document.querySelector(".card");
+      card.style.animation = "shake 0.6s ease-in-out";
+
+      setTimeout(() => {
+        card.style.animation = "";
+      }, 600);
+
+      createParticle("heart");
+    }
+
+    let messageStep = 0;
+
+    const finalMessages = [
+      {
+        text: "🍫 Yıllar boyu en tatlı sabahların nutella ile başladığına dair kandırıldık.",
+        effect: "light"
+      },
+      {
+        text: "Nasıl mı? İzlediğimiz çizgi filmlerin reklam aralarında çıkan nutella reklamları ve tadına da sabahları aşina olduğumuz nutellanın kendisi ile.",
+        effect: "medium"
+      },
+      {
+        text: "İnkar etmiyorum gerçekten de tadıyla, lezzetiyle bizleri sevindiren bir kahvaltıydı kendileri.",
+        effect: "medium"
+      },
+      {
+        text: "Kızdığım tek bir şey var",
+        effect: "medium"
+      },
+      {
+        text: "Neden en tatlı sabahların nutella ile başladığına dair yalan söylediler?",
+        effect: "medium"
+      },
+      {
+        text: "🌅 <strong> Benim için en tatlı sabahlar seninle başlayan sabahlar balım x) </strong> 🌅",
+        effect: "heavy"
+      },
+      {
+        text: "🌅 <strong>Mutlu sabahlar, iyi dersler Hatunum KIPSS😘😎</strong> 🌅",
+        effect: "heavy"
+      }
+    ];
+
+    function handleNo() {
+      if (messageStep === 0) {
+        document.querySelector(".buttons").style.display = "none";
+        document.querySelector(".question").style.display = "none";
+      }
+      showNextMessage();
+    }
+
+    function showNextMessage() {
+      const message = document.getElementById("message");
+
+      if (messageStep < finalMessages.length) {
+        const currentMessage = finalMessages[messageStep];
+
+        message.innerHTML = `
+          <div class="final-message">
+            ${currentMessage.text}
+            <br><br>
+            ${
+              messageStep < finalMessages.length - 1
+                ? '<button class="continue-btn" onclick="continueMessage()">💫 Devam Et 💫</button>'
+                : '<div class="final-note">İyi ki sen...</div>'
+            }
+          </div>
+        `;
+
+        message.className = "message show";
+        applyMessageEffect(currentMessage.effect);
+        messageStep++;
+      }
+    }
+
+    function continueMessage() {
+      showNextMessage();
+    }
+
+    function applyMessageEffect(effect) {
+      const message = document.getElementById("message");
+      message.classList.remove("effect-light", "effect-medium", "effect-heavy");
+
+      if (effect === "light") {
+        message.classList.add("effect-light");
+      } else if (effect === "medium") {
+        message.classList.add("effect-medium");
+      } else if (effect === "heavy") {
+        message.classList.add("effect-heavy");
+      }
+    }
+
+    function createParticle(type) {
+      const card = document.querySelector(".card");
+      const particle = document.createElement("div");
+      particle.className = "particle";
+
+      particle.textContent = type === "heart" ? "❤️" : "✨";
+
+      const cardRect = card.getBoundingClientRect();
+      const x = Math.random() * cardRect.width * 0.8 + cardRect.width * 0.1;
+      const y = cardRect.height * 0.6;
+
+      particle.style.left = x + "px";
+      particle.style.top = y + "px";
+
+      card.appendChild(particle);
+
+      setTimeout(() => {
+        particle.remove();
+      }, 1400);
+    }
+  </script>
 </body>
 </html>
